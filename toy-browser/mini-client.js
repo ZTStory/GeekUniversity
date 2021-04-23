@@ -1,5 +1,5 @@
 const Request = require("./http/request");
-
+const Parser = require("./parse-html/parser");
 /// void 运算符类似于 IIFE 的外部;()
 void (async function () {
     let request = new Request({
@@ -17,5 +17,8 @@ void (async function () {
     });
 
     let response = await request.send();
-    console.log(JSON.stringify(response));
+    let body = decodeURIComponent(response.body);
+    console.log(body);
+    let dom = Parser.parseHTML(body);
+    console.log(dom);
 })();
