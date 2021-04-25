@@ -17,7 +17,7 @@ void (async function () {
     });
 
     let response = await request.send();
-    let body = decodeURIComponent(response.body);
+    let body = response.body;
     console.log(body);
     let dom = Parser.parseHTML(body);
     console.log(dom);

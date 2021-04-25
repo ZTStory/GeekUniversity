@@ -1,4 +1,4 @@
-const css = require("css");
+const CSSParser = require("../parse-css/parse");
 
 const EOF = Symbol("EOF"); // End Of File
 let currentToken = null;
@@ -7,17 +7,15 @@ let currentTextNode = null;
 
 let stack = [{ type: "doucument", children: [] }];
 
-let rules = [];
-function addCSSRules(text) {
-    var ast = css.parse(text);
-    console.log(JSON.stringify(ast, null, "  "));
-    rules.push(...ast.stylesheet.rules);
-}
+let cssParser = new CSSParser(stack);
 
 function emit(token) {
     // console.log(token);
     // return;
     let top = stack[stack.length - 1];
+
+    // 持有html-tag栈
+    cssParser.stack = stack;
 
     if (token.type === "startTag") {
         let element = {
@@ -37,6 +35,8 @@ function emit(token) {
             }
         }
 
+        cssParser.computeCSS(element);
+
         top.children.push(element);
 
         element.parent = top;
@@ -51,7 +51,7 @@ function emit(token) {
             throw new Error("Tag start end doesn't match!");
         } else {
             if (top.tagName === "style") {
-                addCSSRules(top.children[0].content);
+                cssParser.addCSSRules(top.children[0].content);
             }
             stack.pop();
         }

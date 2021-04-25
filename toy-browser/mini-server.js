@@ -10,18 +10,33 @@ function getHTMLById(id) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
     </head>
-    <body custom=${id}>
-        <div class="container">
-            <span>${encodeURIComponent("我是一条文本信息")}</span>
-            <img src="" alt="" />
-        </div>
-    </body>
     <style>
         .container {
             height: 100px;
             width: 200px;
         }
+        .div {
+            backgroud: #fff;
+            height: 100%;
+            width: 100%;
+        }
+        .div2 {
+            border: 1px solid #e3e3e3;
+        }
+        body div {
+            height: 150px;
+            width: 300px;
+        }
+        .container div>span {
+            color: red;
+        }
     </style>
+    <body class="container" custom=${id}>
+        <div class="div div2">
+            <span>This is Text!</span>
+            <img src="" alt="" />
+        </div>
+    </body>
 </html>`;
 }
 
