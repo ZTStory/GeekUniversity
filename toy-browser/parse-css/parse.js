@@ -88,8 +88,27 @@ class CSSParser {
     specificity(selector) {
         let p = new Array(4).fill(0);
         let selectorParts = selector.split(" ");
+        let finalParts = [];
+        // TODO 解析复合选择器
         for (const part of selectorParts) {
-            // 解析复合选择器
+            if (part.includes(">")) {
+                let subparts = part.split(">");
+                finalParts = finalParts.concat(subparts);
+                continue;
+            }
+            if (part.includes("+")) {
+                let subparts = part.split("+");
+                finalParts = finalParts.concat(subparts);
+                continue;
+            }
+            if (part.includes("~")) {
+                let subparts = part.split("~");
+                finalParts = finalParts.concat(subparts);
+                continue;
+            }
+            finalParts = finalParts.concat(part);
+        }
+        for (const part of finalParts) {
             if (part.charAt(0) === "#") {
                 p[1] += 1;
             } else if (part.charAt(0) === ".") {
