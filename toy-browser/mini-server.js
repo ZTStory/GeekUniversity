@@ -30,11 +30,31 @@ function getHTMLById(id) {
         .container div>span {
             color: red;
         }
+        div {
+            border:solid 1px black
+        }
+        .flex-div {
+            align-items:center;display:inline-flex;width:500px;justify-content:space-around;
+        }
+        .flex-item1 {
+            flex:1;width:100px;height:70px;
+        }
+        .flex-item2 {
+            width:200px;height:50px;
+        }
+        .flex-item3 {
+            width:200px;height:100px;
+        }
     </style>
     <body class="container" custom=${id}>
         <div class="div div2">
             <span>This is Text!</span>
             <img src="" alt="" />
+        </div>
+        <div class="flex-div">
+            <div  class="flex-item1"></div>
+            <div  class="flex-item2"></div>
+            <div  class="flex-item3"></div>
         </div>
     </body>
 </html>`;

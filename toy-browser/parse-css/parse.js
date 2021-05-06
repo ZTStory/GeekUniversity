@@ -79,7 +79,7 @@ class CSSParser {
                         computedStyle[declaration.property].specificity = sp;
                     }
                 }
-                console.log(element.computedStyle);
+                // console.log(element.computedStyle);
             }
         }
     }

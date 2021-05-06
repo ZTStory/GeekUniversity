@@ -1,5 +1,7 @@
 const CSSParser = require("../parse-css/parse");
 
+const Layout = require("../layout/layout");
+
 const EOF = Symbol("EOF"); // End Of File
 let currentToken = null;
 let currentAttribute = null;
@@ -53,6 +55,9 @@ function emit(token) {
             if (top.tagName === "style") {
                 cssParser.addCSSRules(top.children[0].content);
             }
+            // 解析完css，标签闭合时，进行布局
+            Layout.layout(top);
+
             stack.pop();
         }
         currentTextNode = null;
