@@ -388,7 +388,7 @@ const Layout = {
         // 计算交叉轴
         this.calculateCross(style, items);
 
-        console.log(flexLines);
+        // console.log(flexLines);
     },
 };
 

@@ -10,27 +10,33 @@
 </script>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
     <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
+        <style>
+            #container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 300px;
+                width: 500px;
+                background-color: rgb(255, 255, 255);
+            }
+            #container #myid {
+                background-color: rgb(255, 0, 0);
+                height: 100px;
+                width: 200px;
+            }
+            #container .c1 {
+                flex: 1;
+                background-color: rgb(0, 255, 0);
+            }
+        </style>
     </head>
     <body>
-        <div class="container">
-            <span>Text</span>
-            <img src="http://www.ruanyifeng.com/blogimg/asset/2016/bg2016081901.jpg" alt="" />
+        <div id="container">
+            <div id="myid"></div>
+            <div class="c1"></div>
         </div>
     </body>
-    <style>
-        .container {
-            height: 100px;
-            width: 200px;
-        }
-        body div > span {
-            height: 150px;
-            width: 300px;
-        }
-    </style>
 </html>

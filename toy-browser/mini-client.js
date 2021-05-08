@@ -1,5 +1,7 @@
+const images = require("images");
 const Request = require("./http/request");
 const Parser = require("./parse-html/parser");
+const render = require("./render/render");
 /// void 运算符类似于 IIFE 的外部;()
 void (async function () {
     let request = new Request({
@@ -21,4 +23,10 @@ void (async function () {
     console.log(body);
     let dom = Parser.parseHTML(body);
     console.log(dom);
+
+    let viewport = images(800, 600);
+
+    render(viewport, dom);
+
+    viewport.save("viewport.jpg");
 })();
