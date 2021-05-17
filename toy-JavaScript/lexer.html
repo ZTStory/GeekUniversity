@@ -1,50 +1,114 @@
 <pre>
 <script>
     class XRegExp {
-    constructor() {}
-
-    
-}
-
-    function complieRegExp(xregexp, name) {
-        if (xregexp[name] instanceof RegExp) {
-            return xregexp[name].source;
-        }
-        let regexp = xregexp[name].replace(/\<([^>]+)\>/g, function (str, $1) {
-            return complieRegExp(xregexp, $1);
-        });
-        return regexp;
+    constructor(source, flag, root = "root") {
+        this.table = new Map();
+        this.regexp = new RegExp(this.complieRegExp(source, root, 0).source, flag);
+        console.log(this.regexp);
+        console.log(this.table);
     }
+
+    complieRegExp(source, name, start) {
+        if (source[name] instanceof RegExp) {
+            return {
+                source: source[name].source,
+                length: 0,
+            };
+        }
+        let length = 0;
+
+        let regexp = source[name].replace(/\<([^>]+)\>/g, (str, $1) => {
+            this.table.set(start + length, $1);
+            // this.table.set($1, start + length);
+
+            ++length;
+
+            let r = this.complieRegExp(source, $1, start + length);
+
+            length += r.length;
+            return `(${r.source})`;
+        });
+        return {
+            source: regexp,
+            length: length,
+        };
+    }
+
+    exec(string) {
+        let r = this.regexp.exec(string);
+        for (let i = 1; i < r.length; i++) {
+            if (r[i] !== undefined) {
+                r[this.table.get(i - 1)] = r[i];
+            }
+        }
+        return r;
+    }
+
+    get lastIndex() {
+        return this.regexp.lastIndex;
+    }
+
+    set lastIndex(value) {
+        return (this.regexp.lastIndex = value);
+    }
+}
 
 const expressObj = {
     InputElement: "<Whitespace>|<LineTerminator>|<Comments>|<Token>",
     Whitespace: / /,
     LineTerminator: /\n/,
-    Comments: /\/\*([^*]|\*[^\/])*\*\/|\/\/[^\n]*/,
+    Comments: /\/\*(?:[^*]|\*[^\/])*\*\/|\/\/[^\n]*/,
     Token: "<Literal>|<Keywords>|<Identifer>|<Punctuator>",
     Literal: "<NumericLiteral>|<BooleanLiteral>|<StringLiteral>|<NullLiteral>",
-    NumericLiteral: /([1-9][0-9]*|0)(\.[0-9]*)?|\.[0-9]+/,
+    NumericLiteral: /(?:[1-9][0-9]*|0)(?:\.[0-9]*)?|\.[0-9]+/,
     BooleanLiteral: /true|false/,
-    StringLiteral: /\"([^"\n]|\\[\s\S])*\"|\'([^"\n]|\\[\s\S])*\'/,
+    StringLiteral: /\"(?:[^"\n]|\\[\s\S])*\"|\'(?:[^"\n]|\\[\s\S])*\'/,
     NullLiteral: /null/,
     Identifer: /[a-zA-Z_$][a-zA-Z0-9_$]*/,
-    Keywords: /if|else|for|function|let/,
+    Keywords: "<Variable>|<NormalKeywords>",
+    Variable: /function|let|const|var|undefined/,
+    NormalKeywords: /if|else|for/,
     Punctuator: /\?|\+|\-|\:|\,|\(|\<|\+\+|\=\=|\=\>|\=|\*|\.|\)|\[|\]|\;|\{|\}/,
 };
 
-let xregexp = complieRegExp(expressObj, "InputElement");
+// let xregexp = complieRegExp(expressObj, "InputElement");
 // console.log(new RegExp(xregexp, "g"));
 
+
+/// 实现代码着色器
+const colorConfig = {
+    NullLiteral: "rgb(46, 119, 180)",
+    Variable: "rgb(46, 119, 180)",
+    NormalKeywords: "rgb(179, 97, 168)",
+    NumericLiteral: "rgb(159, 198, 146)",
+    Punctuator: "black",
+    Identifer: "rgb(105, 118, 220)",
+    StringLiteral: "rgb(204, 121, 95)"
+}
+
+function addStyle(results) {
+    let addColor = false;
+    for (const key in colorConfig) {
+        if (results[key] !== void 0) {
+            document.write(`<pre style='color: ${colorConfig[key]}; display: inline;'>${results[0]}</pre>`)
+            addColor = true;
+            break;
+        }
+    }
+    if (!addColor) {
+        document.write(results[0]);
+    }
+}
+
 function scan(str) {
-    let regexp = new RegExp(complieRegExp(expressObj, "InputElement"), "g");
+    let regexp = new XRegExp(expressObj, "g", "InputElement");
     while (regexp.lastIndex < str.length) {
         let r = regexp.exec(str);
-        // console.log(JSON.stringify(r[0]));
-
-        document.write(r[0]);
-
+        // document.write(r[0]);
+        addStyle(r);
+        console.log(r);
         if (!r[0].length) {
-            return;
+            break;
         }
     }
 }
@@ -59,6 +123,7 @@ scan(`
             board.appendChild(cell);
         }
         board.appendChild(document.createElement("br"));
+        board = null;
     }
 `);
 </script>

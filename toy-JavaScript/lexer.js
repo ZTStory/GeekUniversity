@@ -80,6 +80,17 @@ function scan(str) {
             break;
         }
     }
+
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.innerText = parttern[i * 3 + j] == 2 ? "❌" : pattern[i * 3 + j] == 1 ? "⭕️" : "";
+            cell.addEventListener("click", () => userMove(j, i));
+            board.appendChild(cell);
+        }
+        board.appendChild(document.createElement("br"));
+    }
 }
 
 scan(`
