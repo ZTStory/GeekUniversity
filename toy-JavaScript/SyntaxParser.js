@@ -70,11 +70,6 @@ let start = {
 
 closure(start);
 
-let source = `
-    var a;
-    var b;
-`;
-
 function parse(source) {
     let stack = [start];
     let symbolStack = [];
@@ -112,10 +107,46 @@ function parse(source) {
 
     for (const symbol of scan(source)) {
         shift(symbol);
-        console.log(symbol);
+        // console.log(symbol);
     }
 
-    console.log(reduce());
+    return reduce();
 }
 
-parse(source);
+let evaluator = {
+    Program(node) {
+        return evaluate(node.children[0]);
+    },
+    StatementList(node) {
+        if (node.children.length === 1) {
+            return evaluate(node.children[0]);
+        } else {
+            evaluate(node.children[0]);
+            return evaluate(node.children[1]);
+        }
+    },
+    Statement(node) {
+        return evaluate(node.children[0]);
+    },
+    VariableDeclaration(node) {
+        console.log("Declare variable", node.children[1].value);
+    },
+    EOF() {
+        return null;
+    },
+};
+
+function evaluate(node) {
+    if (evaluator[node.type]) {
+        return evaluator[node.type](node);
+    }
+}
+////////////////////////////////////////////
+let source = `
+    var a;
+    var b;
+`;
+
+let tree = parse(source);
+
+evaluate(tree);
