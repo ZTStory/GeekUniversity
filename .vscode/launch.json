@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/toy-JavaScript/lexer.js"
+            "program": "${workspaceFolder}/toy-JavaScript/LexParser.js"
         }
     ]
 }
