@@ -1,27 +1,74 @@
-import { scan } from "./LexParser.js";
+import {
+    scan
+} from "./LexParser.js";
 
 let syntax = {
-    Program: [["StatementList", "EOF"]],
-    StatementList: [["Statement"], ["StatementList", "Statement"]],
-    Statement: [["ExpressionStatement"], ["IfStatement"], ["VariableDeclaration"], ["FunctionDeclaration"]],
-    IfStatement: [["if", "(", "Expression", ")", "Statement"]],
+    Program: [
+        ["StatementList", "EOF"]
+    ],
+    StatementList: [
+        ["Statement"],
+        ["StatementList", "Statement"]
+    ],
+    Statement: [
+        ["ExpressionStatement"],
+        ["IfStatement"],
+        ["VariableDeclaration"],
+        ["FunctionDeclaration"]
+    ],
+    IfStatement: [
+        ["if", "(", "Expression", ")", "Statement"]
+    ],
     VariableDeclaration: [
         ["var", "Identifier", ";"],
         ["let", "Identifier", ";"],
         ["const", "Identifier", ";"],
     ],
-    FunctionDeclaration: [["function", "Identifier", "(", ")", "{", "Statement", "}"]],
-    ExpressionStatement: [["Expression", ";"]],
-    Expression: [["AdditiveExpression"]],
-    AdditiveExpression: [["MultiplicativeExpression"], ["AdditiveExpression", "+", "MultiplicativeExpression"], ["AdditiveExpression", "-", "MultiplicativeExpression"]],
-    MultiplicativeExpression: [["PrimaryExpression"], ["MultiplicativeExpression", "*", "PrimaryExpression"], ["MultiplicativeExpression", "/", "PrimaryExpression"]],
-    PrimaryExpression: [["(", "Expression", ")"], ["Literal"], ["Identifier"]],
-    Literal: [["NumericLiteral"], ["StringLiteral"], ["BooleanLiteral"], ["NullLiteral"], ["RegularExpressionLiteral"], ["ObjectLiteral"], ["ArrayLiteral"]],
+    FunctionDeclaration: [
+        ["function", "Identifier", "(", ")", "{", "Statement", "}"]
+    ],
+    ExpressionStatement: [
+        ["Expression", ";"]
+    ],
+    Expression: [
+        ["AssignmentExpression"]
+    ],
+    AssignmentExpression: [
+        ["Identifier", "=", "AdditiveExpression"],
+        ["AdditiveExpression"]
+    ],
+    AdditiveExpression: [
+        ["MultiplicativeExpression"],
+        ["AdditiveExpression", "+", "MultiplicativeExpression"],
+        ["AdditiveExpression", "-", "MultiplicativeExpression"]
+    ],
+    MultiplicativeExpression: [
+        ["PrimaryExpression"],
+        ["MultiplicativeExpression", "*", "PrimaryExpression"],
+        ["MultiplicativeExpression", "/", "PrimaryExpression"]
+    ],
+    PrimaryExpression: [
+        ["(", "Expression", ")"],
+        ["Literal"],
+        ["Identifier"]
+    ],
+    Literal: [
+        ["NumericLiteral"],
+        ["StringLiteral"],
+        ["BooleanLiteral"],
+        ["NullLiteral"],
+        ["RegularExpressionLiteral"],
+        ["ObjectLiteral"],
+        ["ArrayLiteral"]
+    ],
     ObjectLiteral: [
         ["{", "}"],
         ["{", "PropertyList", "}"],
     ],
-    PropertyList: [["Property"], ["PropertyList", ",", "Property"]],
+    PropertyList: [
+        ["Property"],
+        ["PropertyList", ",", "Property"]
+    ],
     Property: [
         ["StringLiteral", ":", "AdditiveExpression"],
         ["Identifier", ":", "AdditiveExpression"],
@@ -35,7 +82,7 @@ function closure(state) {
     let queue = [];
     for (const symbol in state) {
         if (symbol.match(/^\$/)) {
-            return;
+            continue;
         }
         queue.push(symbol);
     }
@@ -63,7 +110,7 @@ function closure(state) {
 
     for (const symbol in state) {
         if (symbol.match(/^\$/)) {
-            return;
+            continue;
         }
         if (hash[JSON.stringify(state[symbol])]) {
             state[symbol] = hash[JSON.stringify(state[symbol])];
@@ -86,6 +133,7 @@ closure(start);
 function parse(source) {
     let stack = [start];
     let symbolStack = [];
+
     function reduce() {
         let state = stack[stack.length - 1];
 
@@ -126,6 +174,46 @@ function parse(source) {
     return reduce();
 }
 
+class Realm {
+    constructor() {
+        this.global = new Map();
+        this.Object = new Map();
+        this.Object.call = function () {
+
+        }
+        this.Object_prototype = new Map();
+    }
+}
+
+class EnvironmentRecord {
+    constructor() {
+        this.thisValue
+        this.variables = new Map();
+        this.outer = null;
+    }
+}
+
+class ExecutionContext {
+    constructor() {
+        this.lexicalEnvironment = {}
+        this.variableEnvironment = this.lexicalEnvironment;
+        this.realm = {}
+    }
+}
+
+class Reference {
+    constructor(object, property) {
+        this.object = object;
+        this.property = property;
+    }
+    set(value) {
+        this.object[this.property] = value;
+    }
+    get() {
+        return this.object[this.property];
+    }
+}
+
 let evaluator = {
     Program(node) {
         return evaluate(node.children[0]);
@@ -142,7 +230,10 @@ let evaluator = {
         return evaluate(node.children[0]);
     },
     VariableDeclaration(node) {
-        console.log("Declare variable", node.children[1].value);
+        debugger;
+        let runningEC = ecs[ecs.length - 1];
+        runningEC.variableEnvironment[node.children[1].value];
+        // console.log("Declare variable", node.children[1].value);
     },
     ExpressionStatement(node) {
         return evaluate(node.children[0]);
@@ -166,7 +257,7 @@ let evaluator = {
     },
     PrimaryExpression(node) {
         if (node.children.length === 1) {
-            return evaluate(node.children[0]);
+           return evaluate(node.children[0]);
         }
     },
     Literal(node) {
@@ -200,8 +291,6 @@ let evaluator = {
             }
             value = value * n + c;
         }
-
-        console.log(value);
         return value;
     },
     StringLiteral(node) {
@@ -234,7 +323,7 @@ let evaluator = {
                 result.push(node.value[index]);
             }
         }
-        console.log(result);
+        // console.log(result);
         return result.join("");
     },
     ObjectLiteral(node) {
@@ -243,7 +332,7 @@ let evaluator = {
         } else if (node.children.length === 3) {
             let object = new Map();
             this.PropertyList(node.children[1], object);
-            console.log(object);
+            // console.log(object);
             return object;
         }
     },
@@ -269,14 +358,31 @@ let evaluator = {
             configable: true
         });
     },
+    AssignmentExpression(node) {
+        if (node.children.length === 1) {
+            return evaluate(node.children[0]);
+        } 
+        let left = evaluate(node.children[0]);
+        let right = evaluate(node.children[2]);
+        left.set(right);
+    },
+    Identifier(node) {
+        let runningEC = ecs[ecs.length - 1];
+
+        return new Reference(runningEC.lexicalEnvironment, node.value);
+    },
     EOF() {
         return null;
     },
 };
 
+let realm = new Realm();
+let ecs = [new ExecutionContext()];
+
 function evaluate(node) {
     if (evaluator[node.type]) {
-        return evaluator[node.type](node);
+        let r = evaluator[node.type](node);
+        return r;
     }
 }
 
