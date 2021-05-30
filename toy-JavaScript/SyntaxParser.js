@@ -5,14 +5,18 @@ let syntax = {
     StatementList: [["Statement"], ["StatementList", "Statement"]],
     Statement: [["ExpressionStatement"], ["IfStatement"], ["VariableDeclaration"], ["FunctionDeclaration"]],
     IfStatement: [["if", "(", "Expression", ")", "Statement"]],
-    VariableDeclaration: [["var", "Identifier", ";"]],
+    VariableDeclaration: [
+        ["var", "Identifier", ";"],
+        ["let", "Identifier", ";"],
+        ["const", "Identifier", ";"],
+    ],
     FunctionDeclaration: [["function", "Identifier", "(", ")", "{", "Statement", "}"]],
     ExpressionStatement: [["Expression", ";"]],
     Expression: [["AdditiveExpression"]],
     AdditiveExpression: [["MultiplicativeExpression"], ["AdditiveExpression", "+", "MultiplicativeExpression"], ["AdditiveExpression", "-", "MultiplicativeExpression"]],
     MultiplicativeExpression: [["PrimaryExpression"], ["MultiplicativeExpression", "*", "PrimaryExpression"], ["MultiplicativeExpression", "/", "PrimaryExpression"]],
     PrimaryExpression: [["(", "Expression", ")"], ["Literal"], ["Identifier"]],
-    Literal: [["Number"]],
+    Literal: [["NumericLiteral"], ["StringLiteral"], ["BooleanLiteral"], ["NullLiteral"], ["RegularExpressionLiteral"], ["ObjectLiteral"], ["ArrayLiteral"]],
 };
 
 let hash = {};
@@ -131,6 +135,99 @@ let evaluator = {
     VariableDeclaration(node) {
         console.log("Declare variable", node.children[1].value);
     },
+    ExpressionStatement(node) {
+        return evaluate(node.children[0]);
+    },
+    Expression(node) {
+        return evaluate(node.children[0]);
+    },
+    AdditiveExpression(node) {
+        if (node.children.length == 1) {
+            return evaluate(node.children[0]);
+        } else {
+            // TODO
+        }
+    },
+    MultiplicativeExpression(node) {
+        if (node.children.length == 1) {
+            return evaluate(node.children[0]);
+        } else {
+            // TODO
+        }
+    },
+    PrimaryExpression(node) {
+        if (node.children.length === 1) {
+            return evaluate(node.children[0]);
+        }
+    },
+    Literal(node) {
+        evaluate(node.children[0]);
+    },
+    NumericLiteral(node) {
+        let str = node.value;
+        let l = str.length;
+        let value = 0;
+
+        let n = 10;
+        if (str.match(/^0b/)) {
+            n = 2;
+            l -= 2;
+        } else if (str.match(/^0o/)) {
+            n = 8;
+            l -= 2;
+        } else if (str.match(/^0x/)) {
+            n = 16;
+            l -= 2;
+        }
+
+        while (l--) {
+            let c = str.charCodeAt(str.length - l - 1);
+            if (c >= "a".charCodeAt(0)) {
+                c = c - "a".charCodeAt(0) + 10;
+            } else if (c >= "A".charCodeAt(0)) {
+                c = c - "A".charCodeAt(0) + 10;
+            } else if (c >= "0".charCodeAt(0)) {
+                c = c - "0".charCodeAt(0);
+            }
+            value = value * n + c;
+        }
+
+        console.log(value);
+        return value;
+    },
+    StringLiteral(node) {
+        // let i = 1;
+        let result = [];
+
+        for (let index = 1; index < node.value.length - 1; index++) {
+            if (node.value[index] === "\\") {
+                ++index;
+                let c = node.value[index];
+                // ' " \ b f n r t v
+                let map = {
+                    "'": "'",
+                    '"': '"',
+                    "\\": "\\",
+                    "\0": String.fromCharCode(0x0000),
+                    b: String.fromCharCode(0x0008),
+                    f: String.fromCharCode(0x000c),
+                    n: String.fromCharCode(0x000a),
+                    r: String.fromCharCode(0x000d),
+                    t: String.fromCharCode(0x0009),
+                    v: String.fromCharCode(0x000b),
+                };
+                if (c in map) {
+                    result.push(map[c]);
+                } else {
+                    result.push(c);
+                }
+            } else {
+                result.push(node.value[index]);
+            }
+        }
+        console.log(result);
+        return result.join("");
+    },
     EOF() {
         return null;
     },
@@ -141,12 +238,17 @@ function evaluate(node) {
         return evaluator[node.type](node);
     }
 }
+
+window.js = {
+    evaluate,
+    parse,
+};
+
 ////////////////////////////////////////////
-let source = `
-    var a;
-    var b;
-`;
+// let source = `
+//     "ab\\\nab";
+// `;
 
-let tree = parse(source);
+// let tree = parse(source);
 
-evaluate(tree);
+// evaluate(tree);

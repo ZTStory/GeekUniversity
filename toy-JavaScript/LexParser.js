@@ -58,9 +58,9 @@ const expressObj = {
     Comments: /\/\*(?:[^*]|\*[^\/])*\*\/|\/\/[^\n]*/,
     Token: "<Literal>|<Keywords>|<Identifier>|<Punctuator>",
     Literal: "<NumericLiteral>|<BooleanLiteral>|<StringLiteral>|<NullLiteral>",
-    NumericLiteral: /(?:[1-9][0-9]*|0)(?:\.[0-9]*)?|\.[0-9]+/,
+    NumericLiteral: /0x[0-9a-fA-F]+|0o[0-7]+|0b[01]+|(?:[1-9][0-9]*|0)(?:\.[0-9]*)?|\.[0-9]+/,
     BooleanLiteral: /true|false/,
-    StringLiteral: /\"(?:[^"\n]|\\[\s\S])*\"|\'(?:[^"\n]|\\[\s\S])*\'/,
+    StringLiteral: /\"(?:[^"\n]|\\[\s\S])*\"|\'(?:[^'\n]|\\[\s\S])*\'/,
     NullLiteral: /null/,
     Identifier: /[a-zA-Z_$][a-zA-Z0-9_$]*/,
     Keywords: /if|else|for|function|let|var/,
@@ -120,9 +120,9 @@ export function* scan(str) {
             break;
         }
     }
-    yield {
-        type: "EOF",
-    };
+    // yield {
+    //     type: "EOF",
+    // };
 }
 
 let source = `
