@@ -170,7 +170,7 @@ let evaluator = {
         }
     },
     Literal(node) {
-        evaluate(node.children[0]);
+        return evaluate(node.children[0]);
     },
     NumericLiteral(node) {
         let str = node.value;
@@ -243,7 +243,7 @@ let evaluator = {
         } else if (node.children.length === 3) {
             let object = new Map();
             this.PropertyList(node.children[1], object);
-
+            console.log(object);
             return object;
         }
     },
@@ -258,9 +258,16 @@ let evaluator = {
     Property(node, object) {
         let name;
         if (node.children[0].type === "Identifier") {
-            name = node.children[0].name;
+            name = node.children[0].value;
         } else if (node.children[0].type === "StringLiteral") {
+            name = evaluate(node.children[0]);
         }
+        object.set(name, {
+            value: evaluate(node.children[2]),
+            writable: true,
+            enumerable: true,
+            configable: true
+        });
     },
     EOF() {
         return null;
