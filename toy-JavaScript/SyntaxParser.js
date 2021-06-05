@@ -34,8 +34,16 @@ let syntax = {
         ["AssignmentExpression"]
     ],
     AssignmentExpression: [
-        ["Identifier", "=", "AdditiveExpression"],
-        ["AdditiveExpression"]
+        ["LeftHandSideExpression", "=", "LogicalORExpression"],
+        ["LogicalORExpression"]
+    ],
+    LogicalORExpression: [
+        ["LogicalANDExpression"],
+        ["LogicalORExpression", "||", "LogicalANDExpression"]
+    ],
+    LogicalANDExpression: [
+        ["AdditiveExpression"],
+        ["LogicalANDExpression", "&&", "AdditiveExpression"]
     ],
     AdditiveExpression: [
         ["MultiplicativeExpression"],
@@ -43,9 +51,25 @@ let syntax = {
         ["AdditiveExpression", "-", "MultiplicativeExpression"]
     ],
     MultiplicativeExpression: [
+        ["LeftHandSideExpression"], 
+        ["MultiplicativeExpression", "*", "LeftHandSideExpression"],
+         ["MultiplicativeExpression", "/", "LeftHandSideExpression"]],
+    LeftHandSideExpression: [
+        ["CallExpression"],
+        ["NewExpression"]
+    ],
+    CallExpression: [
+        ["MemberExpression", "Arguments"],
+        ["CallExpression", "Arguments"]
+    ],
+    NewExpression: [
+        ["MemberExpression"],
+        ["new", "NewExpression"]
+    ],
+    MemberExpression: [
         ["PrimaryExpression"],
-        ["MultiplicativeExpression", "*", "PrimaryExpression"],
-        ["MultiplicativeExpression", "/", "PrimaryExpression"]
+        ["PrimaryExpression", ".", "Identifier"],
+        ["PrimaryExpression", "[", "Expression", "]"]
     ],
     PrimaryExpression: [
         ["(", "Expression", ")"],
@@ -130,7 +154,7 @@ let start = {
 
 closure(start);
 
-function parse(source) {
+export function parse(source) {
     let stack = [start];
     let symbolStack = [];
 
@@ -173,229 +197,3 @@ function parse(source) {
 
     return reduce();
 }
-
-class Realm {
-    constructor() {
-        this.global = new Map();
-        this.Object = new Map();
-        this.Object.call = function () {
-
-        }
-        this.Object_prototype = new Map();
-    }
-}
-
-class EnvironmentRecord {
-    constructor() {
-        this.thisValue
-        this.variables = new Map();
-        this.outer = null;
-    }
-}
-
-class ExecutionContext {
-    constructor() {
-        this.lexicalEnvironment = {}
-        this.variableEnvironment = this.lexicalEnvironment;
-        this.realm = {}
-    }
-}
-
-class Reference {
-    constructor(object, property) {
-        this.object = object;
-        this.property = property;
-    }
-    set(value) {
-        this.object[this.property] = value;
-    }
-    get() {
-        return this.object[this.property];
-    }
-}
-
-let evaluator = {
-    Program(node) {
-        return evaluate(node.children[0]);
-    },
-    StatementList(node) {
-        if (node.children.length === 1) {
-            return evaluate(node.children[0]);
-        } else {
-            evaluate(node.children[0]);
-            return evaluate(node.children[1]);
-        }
-    },
-    Statement(node) {
-        return evaluate(node.children[0]);
-    },
-    VariableDeclaration(node) {
-        debugger;
-        let runningEC = ecs[ecs.length - 1];
-        runningEC.variableEnvironment[node.children[1].value];
-        // console.log("Declare variable", node.children[1].value);
-    },
-    ExpressionStatement(node) {
-        return evaluate(node.children[0]);
-    },
-    Expression(node) {
-        return evaluate(node.children[0]);
-    },
-    AdditiveExpression(node) {
-        if (node.children.length == 1) {
-            return evaluate(node.children[0]);
-        } else {
-            // TODO
-        }
-    },
-    MultiplicativeExpression(node) {
-        if (node.children.length == 1) {
-            return evaluate(node.children[0]);
-        } else {
-            // TODO
-        }
-    },
-    PrimaryExpression(node) {
-        if (node.children.length === 1) {
-           return evaluate(node.children[0]);
-        }
-    },
-    Literal(node) {
-        return evaluate(node.children[0]);
-    },
-    NumericLiteral(node) {
-        let str = node.value;
-        let l = str.length;
-        let value = 0;
-
-        let n = 10;
-        if (str.match(/^0b/)) {
-            n = 2;
-            l -= 2;
-        } else if (str.match(/^0o/)) {
-            n = 8;
-            l -= 2;
-        } else if (str.match(/^0x/)) {
-            n = 16;
-            l -= 2;
-        }
-
-        while (l--) {
-            let c = str.charCodeAt(str.length - l - 1);
-            if (c >= "a".charCodeAt(0)) {
-                c = c - "a".charCodeAt(0) + 10;
-            } else if (c >= "A".charCodeAt(0)) {
-                c = c - "A".charCodeAt(0) + 10;
-            } else if (c >= "0".charCodeAt(0)) {
-                c = c - "0".charCodeAt(0);
-            }
-            value = value * n + c;
-        }
-        return value;
-    },
-    StringLiteral(node) {
-        // let i = 1;
-        let result = [];
-
-        for (let index = 1; index < node.value.length - 1; index++) {
-            if (node.value[index] === "\\") {
-                ++index;
-                let c = node.value[index];
-                // ' " \ b f n r t v
-                let map = {
-                    "'": "'",
-                    '"': '"',
-                    "\\": "\\",
-                    "\0": String.fromCharCode(0x0000),
-                    b: String.fromCharCode(0x0008),
-                    f: String.fromCharCode(0x000c),
-                    n: String.fromCharCode(0x000a),
-                    r: String.fromCharCode(0x000d),
-                    t: String.fromCharCode(0x0009),
-                    v: String.fromCharCode(0x000b),
-                };
-                if (c in map) {
-                    result.push(map[c]);
-                } else {
-                    result.push(c);
-                }
-            } else {
-                result.push(node.value[index]);
-            }
-        }
-        // console.log(result);
-        return result.join("");
-    },
-    ObjectLiteral(node) {
-        if (node.children.length === 2) {
-            return {};
-        } else if (node.children.length === 3) {
-            let object = new Map();
-            this.PropertyList(node.children[1], object);
-            // console.log(object);
-            return object;
-        }
-    },
-    PropertyList(node, object) {
-        if (node.children.length === 1) {
-            this.Property(node.children[0], object);
-        } else {
-            this.PropertyList(node.children[0], object);
-            this.Property(node.children[2], object);
-        }
-    },
-    Property(node, object) {
-        let name;
-        if (node.children[0].type === "Identifier") {
-            name = node.children[0].value;
-        } else if (node.children[0].type === "StringLiteral") {
-            name = evaluate(node.children[0]);
-        }
-        object.set(name, {
-            value: evaluate(node.children[2]),
-            writable: true,
-            enumerable: true,
-            configable: true
-        });
-    },
-    AssignmentExpression(node) {
-        if (node.children.length === 1) {
-            return evaluate(node.children[0]);
-        } 
-        let left = evaluate(node.children[0]);
-        let right = evaluate(node.children[2]);
-        left.set(right);
-    },
-    Identifier(node) {
-        let runningEC = ecs[ecs.length - 1];
-
-        return new Reference(runningEC.lexicalEnvironment, node.value);
-    },
-    EOF() {
-        return null;
-    },
-};
-
-let realm = new Realm();
-let ecs = [new ExecutionContext()];
-
-function evaluate(node) {
-    if (evaluator[node.type]) {
-        let r = evaluator[node.type](node);
-        return r;
-    }
-}
-
-window.js = {
-    evaluate,
-    parse,
-};
-
-////////////////////////////////////////////
-// let source = `
-//     "ab\\\nab";
-// `;
-
-// let tree = parse(source);
-
-// evaluate(tree);

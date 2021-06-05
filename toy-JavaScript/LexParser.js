@@ -62,9 +62,9 @@ const expressObj = {
     BooleanLiteral: /true|false/,
     StringLiteral: /\"(?:[^"\n]|\\[\s\S])*\"|\'(?:[^'\n]|\\[\s\S])*\'/,
     NullLiteral: /null/,
+    Keywords: /if|else|for|function|let|var|new/,
     Identifier: /[a-zA-Z_$][a-zA-Z0-9_$]*/,
-    Keywords: /if|else|for|function|let|var/,
-    Punctuator: /\?|\+|\-|\:|\,|\(|\<|\+\+|\=\=|\=\>|\=|\*|\.|\)|\[|\]|\;|\{|\}/,
+    Punctuator: /\|\||\&\&|\?|\+|\-|\:|\,|\(|\<|\+\+|\=\=|\=\>|\=|\*|\.|\)|\[|\]|\;|\{|\}/,
 };
 
 // let xregexp = complieRegExp(expressObj, "InputElement");
@@ -120,9 +120,9 @@ export function* scan(str) {
             break;
         }
     }
-    // yield {
-    //     type: "EOF",
-    // };
+    yield {
+        type: "EOF",
+    };
 }
 
 let source = `
