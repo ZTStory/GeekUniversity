@@ -103,6 +103,58 @@ export class Evaluator {
     Expression(node) {
         return this.evaluate(node.children[0]);
     }
+    /// 增加等式表达式
+    EqualityExpression(node) {
+        if (node.children.length == 1) {
+            return this.evaluate(node.children[0]);
+        }
+        let left = this.evaluate(node.children[0]);
+        let right = this.evaluate(node.children[2]);
+        if (left instanceof Reference) {
+            left = left.get();
+        }
+        if (right instanceof Reference) {
+            right = right.get();
+        }
+        if (node.children[1].type === "==") {
+            return new JSBoolean(left.value == right.value);
+        }
+        if (node.children[1].type === "!=") {
+            return new JSBoolean(left.value != right.value);
+        }
+        if (node.children[1].type === "===") {
+            return new JSBoolean(left.value === right.value);
+        }
+        if (node.children[1].type === "!==") {
+            return new JSBoolean(left.value !== right.value);
+        }
+    }
+    /// 增加相关表达式
+    RelationalExpression(node) {
+        if (node.children.length == 1) {
+            return this.evaluate(node.children[0]);
+        }
+        let left = this.evaluate(node.children[0]);
+        let right = this.evaluate(node.children[2]);
+        if (left instanceof Reference) {
+            left = left.get();
+        }
+        if (right instanceof Reference) {
+            right = right.get();
+        }
+        if (node.children[1].type === "<") {
+            return new JSBoolean(left.value < right.value);
+        }
+        if (node.children[1].type === "<=") {
+            return new JSBoolean(left.value <= right.value);
+        }
+        if (node.children[1].type === ">") {
+            return new JSBoolean(left.value > right.value);
+        }
+        if (node.children[1].type === ">=") {
+            return new JSBoolean(left.value >= right.value);
+        }
+    }
     AdditiveExpression(node) {
         if (node.children.length == 1) {
             return this.evaluate(node.children[0]);

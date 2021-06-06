@@ -64,7 +64,7 @@ const expressObj = {
     NullLiteral: /null/,
     Keywords: /continue|break|if|else|for|function|let|var|new|while/,
     Identifier: /[a-zA-Z_$][a-zA-Z0-9_$]*/,
-    Punctuator: /\|\||\&\&|\?|\+|\-|\:|\,|\(|\<|\+\+|\=\=|\=\>|\=|\*|\.|\)|\[|\]|\;|\{|\}/,
+    Punctuator: /\>\=|\<\=|\=\=\=|\!\=\=|\!\=|\|\||\&\&|\?|\+|\-|\:|\,|\(|\<|\>|\+\+|\=\=|\=\>|\=|\*|\.|\)|\[|\]|\;|\{|\}/,
 };
 
 // let xregexp = complieRegExp(expressObj, "InputElement");
