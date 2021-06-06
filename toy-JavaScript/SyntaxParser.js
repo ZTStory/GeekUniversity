@@ -1,98 +1,53 @@
-import {
-    scan
-} from "./LexParser.js";
+import { scan } from "./LexParser.js";
 
 let syntax = {
-    Program: [
-        ["StatementList", "EOF"]
+    Program: [["StatementList", "EOF"]],
+    StatementList: [["Statement"], ["StatementList", "Statement"]],
+    Statement: [["ExpressionStatement"], ["IfStatement"], ["WhileStatement"], ["VariableDeclaration"], ["FunctionDeclaration"], ["Block"],
+     ["BreakStatement"], ["ContinueStatement"], ["FunctionDeclaration"]],
+    FunctionDeclaration: [
+        ["function", "Identifier", "(", ")","{","StatementList", "}"]
     ],
-    StatementList: [
-        ["Statement"],
-        ["StatementList", "Statement"]
-    ],
-    Statement: [
-        ["ExpressionStatement"],
-        ["IfStatement"],
-        ["VariableDeclaration"],
-        ["FunctionDeclaration"]
-    ],
-    IfStatement: [
-        ["if", "(", "Expression", ")", "Statement"]
+    BreakStatement: [["break", ";"]],
+    ContinueStatement: [["continue", ";"]],
+    WhileStatement: [["while", "(", "Expression", ")", "Statement"]],
+    IfStatement: [["if", "(", "Expression", ")", "Statement"]],
+    Block: [
+        ["{", "}"],
+        ["{", "StatementList", "}"],
     ],
     VariableDeclaration: [
         ["var", "Identifier", ";"],
         ["let", "Identifier", ";"],
         ["const", "Identifier", ";"],
     ],
-    FunctionDeclaration: [
-        ["function", "Identifier", "(", ")", "{", "Statement", "}"]
+    FunctionDeclaration: [["function", "Identifier", "(", ")", "{", "Statement", "}"]],
+    Arguments: [
+        ["(", ")"],
+        ["(", "ArgumentList", ")"],
     ],
-    ExpressionStatement: [
-        ["Expression", ";"]
-    ],
-    Expression: [
-        ["AssignmentExpression"]
-    ],
-    AssignmentExpression: [
-        ["LeftHandSideExpression", "=", "LogicalORExpression"],
-        ["LogicalORExpression"]
-    ],
-    LogicalORExpression: [
-        ["LogicalANDExpression"],
-        ["LogicalORExpression", "||", "LogicalANDExpression"]
-    ],
-    LogicalANDExpression: [
-        ["AdditiveExpression"],
-        ["LogicalANDExpression", "&&", "AdditiveExpression"]
-    ],
-    AdditiveExpression: [
-        ["MultiplicativeExpression"],
-        ["AdditiveExpression", "+", "MultiplicativeExpression"],
-        ["AdditiveExpression", "-", "MultiplicativeExpression"]
-    ],
-    MultiplicativeExpression: [
-        ["LeftHandSideExpression"], 
-        ["MultiplicativeExpression", "*", "LeftHandSideExpression"],
-         ["MultiplicativeExpression", "/", "LeftHandSideExpression"]],
-    LeftHandSideExpression: [
-        ["CallExpression"],
-        ["NewExpression"]
-    ],
+    ArgumentList: [["AssignmentExpression"], ["ArgumentList", ",", "AssignmentExpression"]],
+    ExpressionStatement: [["Expression", ";"]],
+    Expression: [["AssignmentExpression"]],
+    AssignmentExpression: [["LeftHandSideExpression", "=", "LogicalORExpression"], ["LogicalORExpression"]],
+    LogicalORExpression: [["LogicalANDExpression"], ["LogicalORExpression", "||", "LogicalANDExpression"]],
+    LogicalANDExpression: [["AdditiveExpression"], ["LogicalANDExpression", "&&", "AdditiveExpression"]],
+    AdditiveExpression: [["MultiplicativeExpression"], ["AdditiveExpression", "+", "MultiplicativeExpression"], ["AdditiveExpression", "-", "MultiplicativeExpression"]],
+    MultiplicativeExpression: [["LeftHandSideExpression"], ["MultiplicativeExpression", "*", "LeftHandSideExpression"], ["MultiplicativeExpression", "/", "LeftHandSideExpression"]],
+    LeftHandSideExpression: [["CallExpression"], ["NewExpression"]],
     CallExpression: [
         ["MemberExpression", "Arguments"],
-        ["CallExpression", "Arguments"]
+        ["CallExpression", "Arguments"],
     ],
-    NewExpression: [
-        ["MemberExpression"],
-        ["new", "NewExpression"]
-    ],
-    MemberExpression: [
-        ["PrimaryExpression"],
-        ["PrimaryExpression", ".", "Identifier"],
-        ["PrimaryExpression", "[", "Expression", "]"]
-    ],
-    PrimaryExpression: [
-        ["(", "Expression", ")"],
-        ["Literal"],
-        ["Identifier"]
-    ],
-    Literal: [
-        ["NumericLiteral"],
-        ["StringLiteral"],
-        ["BooleanLiteral"],
-        ["NullLiteral"],
-        ["RegularExpressionLiteral"],
-        ["ObjectLiteral"],
-        ["ArrayLiteral"]
-    ],
+    NewExpression: [["MemberExpression"], ["new", "NewExpression"]],
+    MemberExpression: [["PrimaryExpression"], ["PrimaryExpression", ".", "Identifier"], ["PrimaryExpression", "[", "Expression", "]"]],
+    PrimaryExpression: [["(", "Expression", ")"], ["Literal"], ["Identifier"]],
+    Literal: [["NumericLiteral"], ["StringLiteral"], ["BooleanLiteral"], ["NullLiteral"], ["RegularExpressionLiteral"], ["ObjectLiteral"], ["ArrayLiteral"]],
     ObjectLiteral: [
         ["{", "}"],
         ["{", "PropertyList", "}"],
     ],
-    PropertyList: [
-        ["Property"],
-        ["PropertyList", ",", "Property"]
-    ],
+    PropertyList: [["Property"], ["PropertyList", ",", "Property"]],
     Property: [
         ["StringLiteral", ":", "AdditiveExpression"],
         ["Identifier", ":", "AdditiveExpression"],
