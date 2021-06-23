@@ -1,1 +1,13 @@
-<script src="./gesture.js"></script>
+<body oncontextmenu="event.preventDefault()"></body>
+<script type="module">
+    import { TapGesture, PanGesture, SwipeGesture } from "./gesture.js";
+    // new TapGesture(document.documentElement, (event) => {
+    //     console.log("tap event trigger!");
+    // });
+    // new PanGesture(document.documentElement, (event) => {
+    //     console.log("panmove", event);
+    // })
+    new SwipeGesture(document.documentElement, (event) => {
+        console.log("swipe", event);
+    });
+</script>
