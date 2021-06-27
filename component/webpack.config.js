@@ -1,5 +1,5 @@
 module.exports = {
-    entry: "./animation/animation-demo.js",
+    entry: "./main.js",
     module: {
         rules: [
             {

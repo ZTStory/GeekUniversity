@@ -1,84 +1,133 @@
-import { Component } from "./framework";
+import { Component, STATE, ATTRIBUTE } from "./framework";
+import { Animation, TimeLine } from "./animation/animation";
+import { ease } from "./animation/ease";
+import { enableGesture, PanGesture, TapGesture } from "./gesture/gesture";
 
 export class Carousel extends Component {
     constructor() {
         super();
-        this.attributes = Object.create(null);
     }
-    setAttribute(attrName, value) {
-        this.attributes[attrName] = value;
-    }
+
     render() {
         this.root = document.createElement("div");
         this.root.classList.add("carousel");
-        for (const iterator of this.attributes.src) {
+        for (const iterator of this[ATTRIBUTE].src) {
             let child = document.createElement("div");
-            child.style.backgroundImage = `url(${iterator})`;
+            child.style.backgroundImage = `url(${iterator.img})`;
             this.root.appendChild(child);
         }
 
-        // 自动轮播  始终视图可见范围只有2张图，所以只需要处理当前与下一张
-        /*
-        let currentIndex = 0;
-        setInterval(() => {
+        enableGesture(this.root);
+        this[STATE].position = 0;
+
+        let t = Date.now();
+        let ax = 0;
+
+        let tl = new TimeLine();
+        tl.start();
+
+        let handler = null;
+
+        let nextPic = () => {
             let children = this.root.children;
-            let nextIndex = (currentIndex + 1) % children.length;
-            let current = children[currentIndex];
+            let nextIndex = (this[STATE].position + 1) % children.length;
+            let current = children[this[STATE].position];
             let next = children[nextIndex];
 
-            next.style.transition = "none";
-            next.style.transform = `translateX(${100 - nextIndex * 100}%)`;
+            t = Date.now();
 
-            // 16ms 为浏览器的1帧动画事件，防止设置位置更换失效
-            setTimeout(() => {
-                next.style.transition = "";
-                current.style.transform = `translateX(${-100 - currentIndex * 100}%)`;
-                next.style.transform = `translateX(${- nextIndex * 100}%)`
+            tl.add(
+                new Animation({
+                    object: current.style,
+                    property: "transform",
+                    startValue: -this[STATE].position * 500,
+                    endValue: -500 - this[STATE].position * 500,
+                    duration: 500,
+                    timingFunction: ease,
+                    template: (v) => `translateX(${v}px)`,
+                })
+            );
+            tl.add(
+                new Animation({
+                    object: next.style,
+                    property: "transform",
+                    startValue: 500 - nextIndex * 500,
+                    endValue: -nextIndex * 500,
+                    duration: 500,
+                    timingFunction: ease,
+                    template: (v) => `translateX(${v}px)`,
+                })
+            );
 
-                currentIndex = nextIndex;
-            }, 16);
-            
-        }, 3000); 
-        */
+            this[STATE].position = nextIndex;
+            this.triggerEvent("change", { position: this[STATE].position });
+        };
+        handler = setInterval(nextPic, 3000);
 
         // 手动轮播
-        let position = 0;
-        this.root.addEventListener("mousedown", (event) => {
+        new PanGesture(this.root, (event) => {
             let children = this.root.children;
-            // 此处使用clientX 是因为相对稳定，不会随着标签移动而变化
-            let startX = event.clientX;
-            let move = (moveEvent) => {
-                let offsetX = moveEvent.clientX - startX;
-                let current = position - (offsetX - (offsetX % 500)) / 500;
+            if (event.type === "start") {
+                tl.pause();
+                if (Date.now() - t < 500) {
+                    let progress = (Date.now() - t) / 500;
+                    ax = ease(progress) * 500 - 500;
+                    console.log(progress, ax);
+                } else {
+                    ax = 0;
+                }
+                clearInterval(handler);
+            } else if (event.type === "move") {
+                let offsetX = event.clientX - event.startX - ax;
+                let current = this[STATE].position - (offsetX - (offsetX % 500)) / 500;
+
                 for (const offset of [-1, 0, 1]) {
                     let pos = current + offset;
                     // 确保是正数
-                    pos = (pos + children.length) % children.length;
+                    pos = ((pos % children.length) + children.length) % children.length;
                     children[pos].style.transition = "none";
                     children[pos].style.transform = `translateX(${-pos * 500 + offset * 500 + (offsetX % 500)}px)`;
                 }
-            };
-            let up = (upEvent) => {
-                let offsetX = upEvent.clientX - startX;
-                // console.log(offsetX);
-                position = position - Math.round(offsetX / 500);
-                // console.log(-Math.sign(Math.round(offsetX / 500) - offsetX + 250 * Math.sign(offsetX)));
-                for (const offset of [0, -Math.sign(Math.round(offsetX / 500) - offsetX + 250 * Math.sign(offsetX))]) {
-                    let pos = position + offset;
-                    pos = (pos + children.length) % children.length;
-                    children[pos].style.transition = "";
-                    children[pos].style.transform = `translateX(${-pos * 500 + offset * 500}px)`;
+            } else if (event.type === "end") {
+                tl.reset();
+                tl.start();
+                handler = setInterval(nextPic, 3000);
+
+                let offsetX = event.clientX - event.startX - ax;
+                let current = this[STATE].position - (offsetX - (offsetX % 500)) / 500;
+                let direction = Math.round((offsetX % 500) / 500);
+
+                for (const offset of [-1, 0, 1]) {
+                    let pos = current + offset;
+                    // 确保是正数
+                    pos = ((pos % children.length) + children.length) % children.length;
+                    children[pos].style.transition = "none";
+
+                    tl.add(
+                        new Animation({
+                            object: children[pos].style,
+                            property: "transform",
+                            startValue: -pos * 500 + offset * 500 + (offsetX % 500),
+                            endValue: -pos * 500 + offset * 500 + direction * 500,
+                            duration: 500,
+                            timingFunction: ease,
+                            template: (v) => `translateX(${v}px)`,
+                        })
+                    );
                 }
-                // document上添加事件即便是出了浏览器范围 也依然可监听到，防止事件监听遗漏
-                document.removeEventListener("mousemove", move);
-                document.removeEventListener("mouseup", up);
-            };
-            document.addEventListener("mousemove", move);
-            document.addEventListener("mouseup", up);
+
+                this[STATE].position = this[STATE].position - (offsetX - (offsetX % 500)) - direction;
+                this[STATE].position = ((this[STATE].position % children.length) + children.length) % children.length;
+
+                this.triggerEvent("change", { position: this[STATE].position });
+            }
         });
+
+        new TapGesture(this.root, (event) => {
+            console.log(`当前点击了第${this[STATE].position + 1}张`);
+            this.triggerEvent("click", { position: this[STATE].position, url: this[ATTRIBUTE].src[this[STATE].position].url });
+        });
+
         return this.root;
-    }
-    mountTo(parent) {
-        parent.appendChild(this.render());
     }
 }

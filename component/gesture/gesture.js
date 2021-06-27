@@ -98,6 +98,14 @@ class RecognizeGesture {
     }
     start(point, context) {
         (context.startX = point.clientX), (context.startY = point.clientY);
+
+        this.dispatcher.dispatch("start", {
+            startX: context.startX,
+            startY: context.startY,
+            clientX: point.clientX,
+            clientY: point.clientY,
+        });
+
         context.points = [
             {
                 t: Date.now(),
@@ -109,11 +117,13 @@ class RecognizeGesture {
         context.isPan = false;
         context.isPress = false;
         context.isTap = true;
+        context.isFlick = false;
 
         context.handler = setTimeout(() => {
             context.isPan = false;
             context.isPress = true;
             context.isTap = false;
+            context.isFlick = false;
             context.handler = null;
 
             this.dispatcher.dispatch("presstart", {
@@ -133,6 +143,7 @@ class RecognizeGesture {
             context.isPan = true;
             context.isTap = false;
             context.isPress = false;
+            context.isFlick = false;
 
             this.dispatcher.dispatch("panstart", {
                 startX: context.startX,
@@ -171,14 +182,7 @@ class RecognizeGesture {
             });
             clearTimeout(context.handler);
         }
-        if (context.isPan) {
-            this.dispatcher.dispatch("panend", {
-                startX: context.startX,
-                startY: context.startY,
-                clientX: point.clientX,
-                clientY: point.clientY,
-            });
-        }
+
         if (context.isPress) {
             this.dispatcher.dispatch("pressend", {
                 startX: context.startX,
@@ -218,10 +222,27 @@ class RecognizeGesture {
             }
             this.dispatcher.dispatch("swipe", {
                 direction,
+                v,
             });
         } else {
             context.isFlick = false;
         }
+        // 手势谦让
+        if (context.isPan && !context.isFlick) {
+            this.dispatcher.dispatch("panend", {
+                startX: context.startX,
+                startY: context.startY,
+                clientX: point.clientX,
+                clientY: point.clientY,
+            });
+        }
+
+        this.dispatcher.dispatch("end", {
+            startX: context.startX,
+            startY: context.startY,
+            clientX: point.clientX,
+            clientY: point.clientY,
+        });
     }
 
     cancel(point, context) {
@@ -229,15 +250,12 @@ class RecognizeGesture {
     }
 }
 
-class Gesture {
-    constructor(element) {
-        new GestureListener(element, new RecognizeGesture(new Dispatcher(element)));
-    }
+export function enableGesture(element) {
+    new GestureListener(element, new RecognizeGesture(new Dispatcher(element)));
 }
 
-export class TapGesture extends Gesture {
+export class TapGesture {
     constructor(element, action) {
-        super(element);
         this.action = action;
         this.element = element;
         element.addEventListener("tap", action);
@@ -247,9 +265,8 @@ export class TapGesture extends Gesture {
     }
 }
 
-export class PressGesture extends Gesture {
+export class PressGesture {
     constructor(element, action) {
-        super(element);
         this.element = element;
         this.action = action;
         element.addEventListener("pressend", action);
@@ -259,21 +276,39 @@ export class PressGesture extends Gesture {
     }
 }
 
-export class PanGesture extends Gesture {
+export class PanGesture {
     constructor(element, action) {
-        super(element);
         this.action = action;
         this.element = element;
-        element.addEventListener("panmove", action);
-    }
-    remove() {
-        this.element.removeEventListener("panmove", this.action);
+        element.addEventListener("start", (event) => {
+            action({
+                type: "start",
+                ...event,
+            });
+        });
+        element.addEventListener("panmove", (event) => {
+            action({
+                type: "move",
+                ...event,
+            });
+        });
+        element.addEventListener("panend", (event) => {
+            action({
+                type: "panend",
+                ...event,
+            });
+        });
+        element.addEventListener("end", (event) => {
+            action({
+                type: "end",
+                ...event,
+            });
+        });
     }
 }
 
-export class SwipeGesture extends Gesture {
+export class SwipeGesture {
     constructor(element, action) {
-        super(element);
         this.action = action;
         this.element = element;
         element.addEventListener("swipe", action);
