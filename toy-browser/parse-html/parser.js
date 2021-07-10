@@ -231,7 +231,7 @@ function UnquotedAttributeValue(c) {
         currentToken[currentAttribute.name] = currentAttribute.value;
         emit(currentToken);
         return data;
-    } else if (c === "u\0000") {
+    } else if (c === "\u0000") {
     } else if (['"', "'", "<", "=", "`"].includes(c)) {
     } else if (c === EOF) {
     } else {
