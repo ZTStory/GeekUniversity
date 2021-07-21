@@ -1,17 +1,17 @@
 <template>
     <div id="app">
-        <HelloWorld msg="Welcome to Your Vue.js App" />
-        <FileReaderCmp></FileReaderCmp>
+        <SysConvertCmp />
+        <FileReaderCmp />
     </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import SysConvertCmp from "./components/SysConvert.vue";
 import FileReaderCmp from "./components/FileReader.vue";
 export default {
     name: "App",
     components: {
-        HelloWorld,
+        SysConvertCmp,
         FileReaderCmp
     },
 };
