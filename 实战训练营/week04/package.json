@@ -1,0 +1,26 @@
+{
+    "name": "week04",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "install:all": "concurrently \"npm:install:menu-*\"",
+        "start:all": "concurrently \"npm:start:menu-list*\"",
+        "build:all": "concurrently \"npm:build:menu-*\"",
+        "install:menu-main": "cd menu-main && npm i",
+        "install:menu-list": "cd menu-list && npm i",
+        "install:menu-list-content": "cd menu-list-content && npm i",
+        "start:menu-main": "cd menu-main && npm run serve",
+        "start:menu-list": "cd menu-list && npm run serve",
+        "start:menu-list-content": "cd menu-list-content && npm run serve",
+        "build:menu-main": "cd menu-main && npm run build",
+        "build:menu-list": "cd menu-list && npm run build",
+        "build:menu-list-content": "cd menu-list-content && npm run build"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {
+        "concurrently": "^6.2.0"
+    }
+}
