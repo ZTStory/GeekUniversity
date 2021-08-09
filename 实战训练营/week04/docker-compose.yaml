@@ -1,0 +1,18 @@
+version: "2"
+
+services:
+  nginx:
+    image: "nginx:1.21.1"
+    container_name: "nginx"
+    restart: "always"
+    volumes:
+      - "./nginx:/etc/nginx/conf.d"
+      - "./menu-main/dist:/usr/share/nginx/html/dist_main"
+      - "./menu-list/dist:/usr/share/nginx/html/dist_list"
+      - "./menu-list-content/dist:/usr/share/nginx/html/dist_list_content"
+    # 默认nginx的日志输出到stdout，如果你想收集日志请重新配置配置文件
+    #  - "nginx-log:/var/log/nginx/"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+      - "9002:9002"

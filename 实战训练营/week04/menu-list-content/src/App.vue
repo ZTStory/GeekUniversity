@@ -1,7 +1,8 @@
 <template>
     <div class="article-content">
         <div>地址：{{ Src }}</div>
-        <iframe :src="Src"></iframe>
+        <div v-if="isLoading">loading...</div>
+        <iframe id="iframe" :src="Src"></iframe>
     </div>
 </template>
 
@@ -11,6 +12,7 @@ export default {
     data() {
         return {
             Src: "",
+            isLoading: false,
         };
     },
     computed: {
@@ -22,7 +24,14 @@ export default {
     mounted() {
         this.$customStore.onGlobalStateChange((state, prev) => {
             this.Src = state.articleSrc;
+            this.isLoading = true;
+            console.log("开始加载");
         });
+        let iframe = document.querySelector("#iframe");
+        iframe.onload = () => {
+            this.isLoading = false;
+            console.log("开始结束");
+        };
     },
     methods: {
         update() {
