@@ -1,0 +1,12 @@
+{
+  "name": "week06",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cluster.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-modules cluster.mjs"
+  },
+  "author": "",
+  "license": "ISC"
+}
