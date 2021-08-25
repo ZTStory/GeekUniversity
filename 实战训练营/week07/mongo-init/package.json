@@ -1,0 +1,13 @@
+{
+    "name": "mongo-init",
+    "version": "1.0.3",
+    "main": "index.js",
+    "bin": "db.js",
+    "license": "MIT",
+    "dependencies": {
+        "commander": "^8.1.0",
+        "inquirer": "^8.1.2",
+        "mongodb": "^4.1.0",
+        "node-emoji": "^1.10.0"
+    }
+}

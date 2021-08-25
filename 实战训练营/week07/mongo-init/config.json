@@ -1,0 +1,26 @@
+{
+    "url": "mongodb://root:mongodb@localhost:27017",
+    "data": [
+        {
+            "name": "todos",
+            "user": {
+                "user": "liuzt",
+                "passwd": "liuzt!123",
+                "role": "dbOwner",
+                "db": "todos"
+            },
+            "collections": [
+                {
+                    "name": "todos",
+                    "docs": [
+                        {
+                            "subject": "test-todo",
+                            "datetime": "23999999",
+                            "state": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

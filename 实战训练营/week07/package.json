@@ -1,0 +1,23 @@
+{
+  "name": "week07",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "mongo-init": "cd mongo-init && npm install && node db.js",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^3.20.2",
+    "fastify-mongodb": "^4.1.0",
+    "fastify-mysql": "^2.1.0",
+    "fastify-plugin": "^3.0.0",
+    "fastify-redis": "^4.3.1"
+  },
+  "devDependencies": {
+    "mongo-init": "^1.0.3"
+  }
+}

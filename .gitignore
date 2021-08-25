@@ -1,7 +1,6 @@
 /node_modules/
 */node_modules/
 /.vscode/
-package-lock.json
 .DS_Store
 /*/.DS_Store
 /*/前端工程师面试题手册.pdf
