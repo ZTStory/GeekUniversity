@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟列表</title>
+    <style>
+        .list_wrap {
+            position: relative;
+            overflow-y: scroll;
+            width: 200px;
+            margin: 100px;
+            box-sizing: border-box;
+            border: solid 1px red;
+        }
+
+        .list {
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .list div {
+            border-bottom: solid 1px #eee;
+            line-height: 29px;
+            width: 100%;
+        }
+
+        .loading {
+            position: absolute;
+            top: 150px;
+            left: 150px;
+            height: 100px;
+            width: 100px;
+            text-align: center;
+            line-height: 100px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            z-index: 10;
+        }
+        .loading.hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="loading" :class="{hidden: !showLoading}">加载中...</div>
+        <div class="list_wrap" ref="listWrap" @scroll="scrollEvent">
+            
+            <div class="scroll_bar" ref="scrollBar"></div>
+            <div class="list" ref="list">
+                <div v-for="item in showList">{{item}}</div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                list: [],
+                itemHeight: 30,
+                showNum: 10,
+                start: 0,
+                end: 11,
+                showLoading: false
+            }
+        },
+        computed: {
+            showList() {
+                return this.list.slice(this.start, this.end);
+            }
+        },
+        mounted() {
+            for (let i = 0; i < 15; i++) {
+                this.list.push("第" + i + "行");
+            }
+            this.$refs.listWrap.style.height = this.itemHeight * this.showNum + 'px';
+            this.$refs.scrollBar.style.height = this.itemHeight * this.list.length + 'px';
+        },
+        methods: {
+            scrollEvent() {
+                let scrollTop = this.$refs.listWrap.scrollTop;
+                this.start = Math.floor(scrollTop / this.itemHeight);
+                this.end = this.start + this.showNum + 1;
+                this.$refs.list.style.top = this.start * this.itemHeight + 'px';
+
+                console.log(scrollTop);
+                
+                
+                if (scrollTop / this.itemHeight > this.list.length - this.showNum && !this.showLoading) {
+                    this.showLoading = true;
+                    setTimeout(() => {
+                        this.showLoading = false;
+                        this.$nextTick(() => {
+                            this.addNum();
+                        })
+                    }, 1000)
+                } 
+            },
+            addNum() {
+                let index = this.list.length;
+                for (let i = index; i < index + 5; i++) {
+                    this.list.push("第" + i + "行");
+                }
+                this.$refs.scrollBar.style.height = this.itemHeight * this.list.length + 'px';
+            }
+        }
+    })
+</script>
+
+</html>
